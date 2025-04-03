@@ -1,25 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./ERC20.sol";
+import "./ITokenBank.sol";
+import "./IERC20.sol";
 
-contract TokenBank {
-  BaseERC20 public token;
-  mapping(address => uint) public balances;
+contract TokenBankV2 is ITokenBank {
+    IERC20 public token;
+    mapping(address => uint) public balances;
 
-  constructor(address _token) {
-    token = BaseERC20(_token);
-  }
+    constructor(address _token) {
+        token = IERC20(_token);
+    }
 
-  function deposit(uint _amount) public {
+    function deposit(uint _amount) public {
         require(_amount > 0, "Deposit amount must be greater than 0");
         token.transferFrom(msg.sender, address(this), _amount);
         balances[msg.sender] += _amount;
     }
 
     function withdraw(uint _amount) public {
-        require(balances[msg.sender] >= _amount, "Insufficient balance to withdraw");
+        require(
+            balances[msg.sender] >= _amount,
+            "Insufficient balance to withdraw"
+        );
         balances[msg.sender] -= _amount;
         token.transfer(msg.sender, _amount);
+    }
+
+    function tokensReceived(address _from, uint256 _amount) external {
+        balances[_from] += _amount;
     }
 }
