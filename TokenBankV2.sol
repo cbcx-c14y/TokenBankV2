@@ -12,6 +12,8 @@ contract TokenBankV2 is ITokenBank {
         token = IERC20(_token);
     }
 
+    event Deposited(address indexed user, uint256 amount);
+
     function deposit(uint _amount) public {
         require(_amount > 0, "Deposit amount must be greater than 0");
         token.transferFrom(msg.sender, address(this), _amount);
@@ -28,6 +30,9 @@ contract TokenBankV2 is ITokenBank {
     }
 
     function tokensReceived(address _from, uint256 _amount) external {
+        require(msg.sender == address(token), 'not token');
         balances[_from] += _amount;
+
+        emit Deposited(msg.sender, _amount);
     }
 }
